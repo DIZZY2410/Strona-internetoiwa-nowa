@@ -1,0 +1,35 @@
+version: "3.9"
+services:
+  database:
+    image: mysql:8
+    environment:
+      MYSQL_DATABASE: blog_db
+      MYSQL_USER: blog
+      MYSQL_PASSWORD: blogpass
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+  backend:
+    build: ./backend
+    environment:
+      DB_HOST: database
+      DB_USER: blog
+      DB_PASS: blogpass
+      DB_NAME: blog_db
+      JWT_SECRET: supersecret
+      CLIENT_URL: http://localhost:3000
+    depends_on:
+      - database
+    ports:
+      - "8000:8000"
+  frontend:
+    build: ./frontend
+    environment:
+      REACT_APP_API_URL: http://localhost:8000/api
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+volumes:
+  db_data:
